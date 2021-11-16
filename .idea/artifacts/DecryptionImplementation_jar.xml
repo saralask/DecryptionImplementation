@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="DecryptionImplementation:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/DecryptionImplementation_jar</output-path>
+    <root id="archive" name="DecryptionImplementation.jar">
+      <element id="module-output" name="DecryptionImplementation" />
+    </root>
+  </artifact>
+</component>
