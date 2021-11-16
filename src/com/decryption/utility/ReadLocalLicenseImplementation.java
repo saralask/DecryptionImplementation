@@ -2,12 +2,10 @@ package com.decryption.utility;
 
 import com.decryption.utility.utils.FileOperations;
 import com.decryption.utility.utils.MultipartUtility;
-import com.sun.security.ntlm.Client;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,30 +16,44 @@ import java.util.List;
  */
 public class ReadLocalLicenseImplementation {
 
-    public static Boolean requestReadLicense(String path, String requestURL) throws IOException {
+    public static File requestReadLicense(String path, String requestURL) throws IOException {
         String charset = "UTF-8";
         File uploadFile = new File(path);
 
-        try {
-            MultipartUtility multipart = new MultipartUtility(requestURL, charset);
-            multipart.addFilePart("multipartFile", uploadFile);
+        MultipartUtility multipart = new MultipartUtility(requestURL, charset);
+        multipart.addFilePart("multipartFile", uploadFile);
+        int productId = Integer.parseInt(multipart.finish().get(0));
 
-
-            List<String> fileContents = new ArrayList<>(multipart.finish());
-            BufferedWriter writer = new BufferedWriter(new FileWriter(uploadFile));
-
-            for(String str : fileContents)
-            writer.write(str+"\n");
-            writer.close();
-
-        } catch (IOException ex) {
-            System.err.println(ex);
-        }
-
-        if(FileOperations.readFile(uploadFile) != null) return true;
-        return false;
+        return getLicenseFile(productId);
     }
 
+    public static File getLicenseFile(int productId) throws IOException {
+
+        File file = new File("D:\\WORK\\Hackathon2021\\DecryptionImplementation\\src\\resources\\archive.zip");
+        URL urlForGetRequest = new URL("http://localhost:8081/getLicenseFile/" + productId);
+        HttpURLConnection connection = (HttpURLConnection) urlForGetRequest.openConnection();
+        connection.setRequestMethod("GET");
+        int responseCode = connection.getResponseCode();
+
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try (InputStream in = urlForGetRequest.openStream();
+                 BufferedInputStream bis = new BufferedInputStream(in);
+                 FileOutputStream fos = new FileOutputStream(file.getName())) {
+
+                byte[] data = new byte[1024];
+                int count;
+                while ((count = bis.read(data, 0, 1024)) != -1) {
+                    fos.write(data, 0, count);
+                }
+            }
+
+        } else {
+            System.out.println("GET NOT WORKED");
+        }
+
+        return file;
+    }
 
 
 }
